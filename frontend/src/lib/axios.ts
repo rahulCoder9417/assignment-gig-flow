@@ -1,0 +1,33 @@
+import axios from "axios";
+
+export const onSubmitAxios = async (type: string, url: string, data: any = {}, headers: any = {}, param: any = {}) => {
+  try {
+    const baseUrl =import.meta.env.VITE_BACKEND_URL+ `${url}`;
+    let response;
+
+    switch (type.toLowerCase()) {
+      case "post":
+        response = await axios.post(baseUrl, data, { headers, withCredentials: true });
+        break;
+      case "get":
+        response = await axios.get(baseUrl, { params: param, headers, withCredentials: true });
+        break;
+      case "patch":
+        response = await axios.patch(baseUrl, data, { headers, withCredentials: true });
+        break;
+      case "put":
+        response = await axios.put(baseUrl, data, { headers, withCredentials: true });
+        break;
+      case "delete":
+        response = await axios.delete(baseUrl, { data, headers, withCredentials: true });
+        break;
+      default:
+        throw new Error(`Unsupported HTTP method: ${type}`);
+    }
+
+    return response; // Return the resolved data
+  } catch (error: any) {
+    console.error("Axios Request Error:", error?.response || error?.message || "Unknown error");
+    throw error; // Propagate error for handling in the calling function
+  }
+};
