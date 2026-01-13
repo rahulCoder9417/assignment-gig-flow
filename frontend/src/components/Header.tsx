@@ -2,9 +2,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
-import { Briefcase, LogOut, Plus, User, Menu, X } from 'lucide-react';
+import { Briefcase, LogOut, Plus, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { onSubmitAxios } from '@/lib/axios';
 
 const Header = () => {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -12,7 +13,13 @@ const Header = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
+    try {
+      const r = await onSubmitAxios("post", "users/logout")
+  
+    } catch (error) {
+      console.log(error)
+    }
     dispatch(logout());
     navigate('/');
     setMobileMenuOpen(false);
@@ -20,7 +27,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-around">
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
             <Briefcase className="h-4 w-4 text-primary-foreground" />
@@ -70,7 +77,7 @@ const Header = () => {
                 </div>
                 <span className="text-sm font-medium">{user?.name}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <Button variant="ghost" size="icon" onClick={async()=>await handleLogout()}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </>
@@ -145,7 +152,7 @@ const Header = () => {
                       <span className="text-sm font-medium">{user?.name}</span>
                     </div>
                     <button
-                      onClick={handleLogout}
+                      onClick={async()=>await handleLogout()}
                       className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
                     >
                       <LogOut className="h-4 w-4" />

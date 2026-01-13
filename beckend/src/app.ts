@@ -43,7 +43,7 @@ import { registerUser, loginUser } from "./controllers/user.controller.js";
 //routes use
 app.post("/api/auth/register", registerUser);
 app.post("/api/auth/login", loginUser);
-app.use("/api/user", userRoutes)
+app.use("/api/users", userRoutes)
 app.use("/api/gigs", gigRoutes)
 app.use("/api/bids", bidRoutes)
 

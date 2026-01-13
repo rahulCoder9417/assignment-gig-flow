@@ -29,7 +29,7 @@ export const createBid = async (req: Request, res: Response) => {
       price,
     });
 
-    return new ApiResponse(201, bid, "Bid submitted successfully");
+    return res.status(201).json(new ApiResponse(201, bid, "Bid submitted successfully"));
   } catch (err: any) {
 
     throw new ApiError(500, "Failed to submit bid");
@@ -54,7 +54,7 @@ export const getBidsForGig = async (req: Request, res: Response) => {
       .populate("freelancerId", "name email")
       .sort({ createdAt: -1 });
 
-    return new ApiResponse(200, bids, "Bids fetched successfully");
+    return res.status(200).json(new ApiResponse(200, bids, "Bids fetched successfully"));
   } catch (err) {
     throw new ApiError(500, "Failed to fetch bids");
   }
@@ -108,7 +108,7 @@ export const acceptBid = async (req: Request, res: Response) => {
       message: `You have been hired for "${gig.title}"`,
       
     });
-    return new ApiResponse(200, bid, "Bid accepted successfully");
+    return res.status(200).json(new ApiResponse(200, bid, "Bid accepted successfully"));
   } catch (error) {
     await session.abortTransaction();
     throw error;
@@ -123,7 +123,7 @@ export const getMyBids = async (req: Request, res: Response) => {
     const bids = await Bid.find({ freelancerId: req.user?._id })
       .populate("gigId")
       .sort({ createdAt: -1 });
-    return new ApiResponse(200, bids, "Bids fetched successfully");
+    return res.status(200).json(new ApiResponse(200, bids, "Bids fetched successfully"));
   } catch (err) {
     throw new ApiError(500, "Failed to fetch bids");
   }

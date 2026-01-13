@@ -3,6 +3,7 @@ import axios from "axios";
 export const onSubmitAxios = async (type: string, url: string, data: any = {}, headers: any = {}, param: any = {}) => {
   try {
     const baseUrl =import.meta.env.VITE_BACKEND_URL+ `${url}`;
+
     let response;
 
     switch (type.toLowerCase()) {

@@ -2,17 +2,33 @@ import { Request, Response } from "express";
 import Gig from "../models/gig.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-export const getOpenGigs = async (req: Request, res: Response) => {
+export const getGigs = async (req: Request, res: Response) => {
   try {
-  
-    const gigs = await Gig.find({
-      status: "open"
-    }).sort({ createdAt: -1 });
-    return  new ApiResponse(200, gigs, "Gigs fetched successfully");
+    const {
+      status = "open",
+      limit
+    } = req.query;
+    const filter: Record<string, any> = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    let query = Gig.find(filter).sort({createdAt: -1});
+
+    if (limit) {
+      query = query.limit(Number(limit));
+    }
+
+    const gigs = await query;
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, gigs, "Gigs fetched successfully"));
   } catch (e) {
     throw new ApiError(500, "Failed to fetch gigs");
   }
 };
+
 
 export const createGig = async (req: Request, res: Response) => {
   try {
@@ -27,7 +43,7 @@ export const createGig = async (req: Request, res: Response) => {
       ownerId: req.user?._id,
       status: "open",
     });
-    return new ApiResponse(201, gig, "Gig created successfully");
+    return res.status(201).json(new ApiResponse(201, gig, "Gig created successfully"));
   } catch (e) {
     throw new ApiError(500, "Failed to create gig");
   }
@@ -57,7 +73,7 @@ export const changeGigInfo = async (req: Request, res: Response) => {
 
     await gig.save();
 
-    return new ApiResponse(200, gig, "Gig updated successfully");
+    return res.status(200).json(new ApiResponse(200, gig, "Gig updated successfully"));
   } catch (error) {
     throw new ApiError(500, "Failed to update gig");
   }
@@ -78,7 +94,7 @@ export const searchGigs = async (req: Request, res: Response) => {
 
     const gigs = await Gig.find(query).sort({ createdAt: -1 });
 
-    return new ApiResponse(200, gigs, "Gigs fetched successfully");
+    return  res.status(200).json(new ApiResponse(200, gigs, "Gigs fetched successfully"));
   } catch (error) {
     throw new ApiError(500, "Failed to fetch gigs");
   }
@@ -90,7 +106,7 @@ export const deleteGig = async (req: Request, res: Response) => {
     if (!gig) {
       throw new ApiError(404, "Gig not found");
     }
-    return new ApiResponse(200, gig, "Gig deleted successfully");
+    return res.status(200).json(new ApiResponse(200, gig, "Gig deleted successfully"));
   } catch (error) {
     throw new ApiError(500, "Failed to delete gig");
   }
@@ -99,7 +115,7 @@ export const deleteGig = async (req: Request, res: Response) => {
 export const myGigs = async (req: Request, res: Response) => {
   try {
     const gigs = await Gig.find({ ownerId: req.user?._id }).sort({ createdAt: -1 });
-    return new ApiResponse(200, gigs, "Gigs fetched successfully");
+    return res.status(200).json(new ApiResponse(200, gigs, "Gigs fetched successfully"));
   } catch (error) {
     throw new ApiError(500, "Failed to fetch gigs");
   }

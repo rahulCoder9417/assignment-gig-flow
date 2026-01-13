@@ -4,7 +4,6 @@ import { useAppSelector } from '@/store/hooks';
 import { ArrowRight, Briefcase, Users, Zap, Shield, TrendingUp, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
-
 const Index = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -44,7 +43,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden gradient-hero">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
         <div className="container relative py-24 md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -140,7 +139,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mx-10">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -183,7 +182,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3 mx-10">
             {[
               {
                 step: '01',
@@ -223,7 +222,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24">
+      <section className="py-24 mx-10">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -232,7 +231,7 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="relative overflow-hidden rounded-3xl gradient-primary p-12 text-center md:p-16"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent" />
+            <div className="absolute  inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent" />
             <div className="relative">
               <h2 className="mb-4 font-display text-3xl font-bold text-primary-foreground md:text-4xl">
                 Ready to Start Your Journey?
@@ -258,18 +257,12 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border py-12">
-        <div className="container">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-2 font-display text-lg font-bold">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
-                <Briefcase className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="text-gradient">GigFlow</span>
-            </div>
+        <div className="flex items-center justify-center">
+     
             <p className="text-sm text-muted-foreground">
               © 2024 GigFlow. All rights reserved.
             </p>
-          </div>
+          
         </div>
       </footer>
     </div>

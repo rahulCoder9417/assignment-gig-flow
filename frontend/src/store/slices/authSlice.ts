@@ -1,6 +1,5 @@
 import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
 import { type User } from '@/types';
-
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -19,19 +18,9 @@ const authSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
-      state.isAuthenticated = !!action.payload;
+      state.isAuthenticated = action.payload ? true : false;
     },
-    login: (state, action: PayloadAction<{ email: string; password: string; name?: string }>) => {
-      // Simulate login - in production, this would be an async thunk
-      const { email, name } = action.payload;
-      state.user = {
-        id: crypto.randomUUID(),
-        email,
-        name: name || email.split('@')[0],
-        createdAt: new Date().toISOString(),
-      };
-      state.isAuthenticated = true;
-    },
+   
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
@@ -42,5 +31,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, login, logout, setLoading } = authSlice.actions;
+export const { setUser, logout, setLoading } = authSlice.actions;
 export default authSlice.reducer;

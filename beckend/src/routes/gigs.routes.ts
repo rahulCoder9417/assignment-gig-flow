@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  getOpenGigs,
+  getGigs,
   createGig,
   changeGigInfo,
   searchGigs,
@@ -11,7 +11,7 @@ import { verifyJWT } from "../middleware/auth.js";
 
 const router = Router();
 
-router.get("/", getOpenGigs);
+router.get("/", getGigs);
 router.get("/search", searchGigs);
 router.get("/my", verifyJWT, myGigs);
 router.post("/", verifyJWT, createGig);

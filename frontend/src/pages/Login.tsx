@@ -5,11 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppDispatch } from '@/store/hooks';
-import { login } from '@/store/slices/authSlice';
 import { Briefcase, Mail, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { showToast } from '@/lib/toast';
-import { toast } from 'sonner';
+import { onSubmitAxios } from '@/lib/axios';
+import { setUser } from '@/store/slices/authSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -27,11 +27,23 @@ const Login = () => {
     }
 
     setIsLoading(true);
+    const response = await onSubmitAxios("post", "auth/login", { email, password });
+    console.log(response)
+    if (response.status !== 200) {
+      showToast(false, 'Something went wrong', response.data.message);
+      setIsLoading(false);
+      return;
+    }
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    dispatch(login({ email, password }));
+    dispatch(setUser({
+      username:  response.data.data.user.username,
+      name: response.data.data.user.name,
+      id: response.data.data.user._id,
+      avatarUrl: response.data.data.user.avatarUrl,
+      coverImage: response.data.data.user.coverImage,
+      email: response.data.data.user.email,
+      createdAt: response.data.data.user.createdAt
+    }));
     showToast(true, 'Welcome back!');
     navigate('/gigs');
     setIsLoading(false);

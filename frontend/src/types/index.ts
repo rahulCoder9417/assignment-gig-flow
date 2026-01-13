@@ -2,7 +2,9 @@ export interface User {
     id: string;
     email: string;
     name: string;
-    avatar?: string;
+    username: string;
+    avatarUrl?: string;
+    coverImage?: string;
     createdAt: string;
   }
   

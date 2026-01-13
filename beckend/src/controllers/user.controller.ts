@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import { deleteImageFromCloudinary } from "../utils/Cloudinary.js";
+import { console } from "inspector";
 interface options {
   httpOnly: boolean;
   secure: boolean;
@@ -29,7 +30,7 @@ const generateAccessAndRefereshTokens = async(userId: string) =>{
   }
 }
 const registerUser = async (req: Request, res: Response) => {
-  const {name, email, username, password ,avatarUrl, coverImageUrl} = req.body
+  const {name, email, username, password ,avatarUrl, coverImage} = req.body
 
   if (
       [name, email, username, password].some((field) => field?.trim() === "")
@@ -51,7 +52,7 @@ const registerUser = async (req: Request, res: Response) => {
       throw new ApiError(400, "Avatar url is required")
   }
 
-  if (!coverImageUrl) {
+  if (!coverImage) {
       throw new ApiError(400, "Cover Image url is required")
   }
  
@@ -59,7 +60,7 @@ const registerUser = async (req: Request, res: Response) => {
   const user = await User.create({
       name,
       avatarUrl,
-      coverImage: coverImageUrl,
+      coverImage,
       email, 
       password,
       username: username.toLowerCase()!
@@ -81,12 +82,12 @@ const registerUser = async (req: Request, res: Response) => {
 
   const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(String(user._id))
   return res
-  .status(200)
+  .status(201)
   .cookie("accessToken", accessToken, options)
   .cookie("refreshToken", refreshToken, options)
   .json(
       new ApiResponse(
-          200, 
+          201, 
           createdUser,
         "User registered Successfully"
       )
@@ -146,11 +147,12 @@ const loginUser = async (req: Request, res: Response) =>{
 }
 
 const logoutUser = async(req: Request, res: Response) => {
+    console.log("logout in beckend")
   await User.findByIdAndUpdate(
       req.user!._id,
       {
           $unset: {
-              refreshToken: 1 // this removes the field from document
+              refreshToken: 1
           }
       },
       {
