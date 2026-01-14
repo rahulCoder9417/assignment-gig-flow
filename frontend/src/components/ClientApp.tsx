@@ -44,11 +44,19 @@ export const ClientApp = () => {
                       socketRef.current.on("connect_error", (error) => {
                         console.log("❌ Socket.IO connection error:", error.message);
                       });
-                      socketRef.current.on("hire-notification", async (data) => {
-                        const r = await JSON.parse(data);
-                        showToast(true, "Hired for "+r.title,"",true,r.gigId,navigate);
-                        console.log("New bid received:", r);
+                      socketRef.current.on("hire-notification", (data) => {
+                        console.log("New bid received:", data);
+                      
+                        showToast(
+                          true,
+                          "Hired for " + data.title,
+                          "",
+                          true,
+                          data.gigId,
+                          navigate
+                        );
                       });
+                      
                       
                       socketRef.current.on("disconnect", () => {
                         console.log("Socket.IO disconnected");
