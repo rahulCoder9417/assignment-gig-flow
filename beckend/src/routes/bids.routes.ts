@@ -11,7 +11,7 @@ const router = Router();
 
 router.post("/", verifyJWT, createBid);
 
-router.get("/:gigId", verifyJWT, getBidsForGig);
+router.get("/getBidByGigId/:gigId", verifyJWT, getBidsForGig);
 
 router.get("/my", verifyJWT, getMyBids);
 router.patch("/:bidId/hire", verifyJWT, acceptBid);

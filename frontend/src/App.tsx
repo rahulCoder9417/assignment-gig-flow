@@ -13,6 +13,8 @@ import MyGigs from "./pages/MyGigs";
 import MyBids from "./pages/MyBids";
 import NotFound from "./pages/NotFound";
 import { ClientApp } from "./components/ClientApp";
+import Profile from "./pages/Profile";
+import GetProfile from './pages/GetProfile';
 
 const App = () => 
   ( 
@@ -42,6 +44,9 @@ const App = () =>
             <Route path="/post-gig" element={<PostGig />} />
             <Route path="/my-gigs" element={<MyGigs />} />
             <Route path="/my-bids" element={<MyBids />} />
+            <Route path="/profile" element={<Profile />} />
+            
+            <Route path="/profile/:id" element={<GetProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

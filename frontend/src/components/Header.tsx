@@ -1,11 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { logout } from '@/store/slices/authSlice';
-import { Briefcase, LogOut, Plus, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { onSubmitAxios } from '@/lib/axios';
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
+import { Briefcase, LogOut, Plus, Menu, X } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { onSubmitAxios } from "@/lib/axios";
 
 const Header = () => {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -13,22 +13,30 @@ const Header = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     try {
-      const r = await onSubmitAxios("post", "users/logout")
-  
+      await onSubmitAxios("post", "users/logout");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
     dispatch(logout());
-    navigate('/');
+    navigate("/");
     setMobileMenuOpen(false);
   };
 
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    `text-sm font-medium transition-colors ${
+      isActive
+        ? "text-blue-500"
+        : "text-muted-foreground hover:text-foreground"
+    }`;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-around">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
+      <div className="container flex h-16 items-center justify-between">
+
+        {/* Logo */}
+        <Link to="/" className="flex items-center ml-2 gap-2 font-display text-xl font-bold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
             <Briefcase className="h-4 w-4 text-primary-foreground" />
           </div>
@@ -37,26 +45,18 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
-          <Link
-            to="/gigs"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
+          <NavLink to="/gigs" className={navClass}>
             Browse Gigs
-          </Link>
+          </NavLink>
+
           {isAuthenticated && (
             <>
-              <Link
-                to="/my-gigs"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
+              <NavLink to="/my-gigs" className={navClass}>
                 My Gigs
-              </Link>
-              <Link
-                to="/my-bids"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
+              </NavLink>
+              <NavLink to="/my-bids" className={navClass}>
                 My Bids
-              </Link>
+              </NavLink>
             </>
           )}
         </nav>
@@ -71,13 +71,19 @@ const Header = () => {
                   Post a Gig
                 </Link>
               </Button>
-              <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 py-1 pl-1 pr-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                  {user?.name?.charAt(0).toUpperCase()}
+
+              <Link to="/profile">
+                <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 py-1 pl-1 pr-3">
+                  <img
+                    src={user?.avatarUrl}
+                    alt=""
+                    className="h-7 w-7 rounded-full"
+                  />
+                  <span className="text-sm font-medium">{user?.name}</span>
                 </div>
-                <span className="text-sm font-medium">{user?.name}</span>
-              </div>
-              <Button variant="ghost" size="icon" onClick={async()=>await handleLogout()}>
+              </Link>
+
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </>
@@ -98,7 +104,7 @@ const Header = () => {
           variant="ghost"
           size="icon"
           className="md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
@@ -109,41 +115,70 @@ const Header = () => {
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="border-b border-border bg-background md:hidden"
           >
             <nav className="container flex flex-col gap-2 py-4">
-              <Link
+
+              <NavLink
                 to="/gigs"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-blue-500/10 text-blue-500"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`
+                }
               >
                 Browse Gigs
-              </Link>
-              {isAuthenticated ? (
+              </NavLink>
+
+              {isAuthenticated && (
                 <>
-                  <Link
+                  <NavLink
                     to="/my-gigs"
-                    className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-blue-500/10 text-blue-500"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`
+                    }
                   >
                     My Gigs
-                  </Link>
-                  <Link
+                  </NavLink>
+
+                  <NavLink
                     to="/my-bids"
-                    className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-blue-500/10 text-blue-500"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`
+                    }
                   >
                     My Bids
-                  </Link>
-                  <Link
+                  </NavLink>
+
+                  <NavLink
                     to="/post-gig"
-                    className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-blue-500/10 text-blue-500"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`
+                    }
                   >
                     Post a Gig
-                  </Link>
+                  </NavLink>
+
                   <div className="border-t border-border pt-2 mt-2">
                     <div className="flex items-center gap-2 px-4 py-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
@@ -151,8 +186,9 @@ const Header = () => {
                       </div>
                       <span className="text-sm font-medium">{user?.name}</span>
                     </div>
+
                     <button
-                      onClick={async()=>await handleLogout()}
+                      onClick={handleLogout}
                       className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
                     >
                       <LogOut className="h-4 w-4" />
@@ -160,7 +196,9 @@ const Header = () => {
                     </button>
                   </div>
                 </>
-              ) : (
+              )}
+
+              {!isAuthenticated && (
                 <div className="flex flex-col gap-2 border-t border-border pt-4 mt-2">
                   <Button variant="outline" asChild onClick={() => setMobileMenuOpen(false)}>
                     <Link to="/login">Sign In</Link>

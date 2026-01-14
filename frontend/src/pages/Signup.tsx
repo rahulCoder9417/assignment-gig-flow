@@ -151,7 +151,7 @@ const SignUp = () => {
         setUser({
           username: response.data.data.username,
           name: response.data.data.name,
-          id: response.data.data._id,
+          _id: response.data.data._id,
           avatarUrl: response.data.data.avatarUrl,
           coverImage: response.data.data.coverImage,
           email: response.data.data.email,

@@ -1,5 +1,5 @@
 export interface User {
-    id: string;
+    _id: string;
     email: string;
     name: string;
     username: string;
@@ -7,26 +7,28 @@ export interface User {
     coverImage?: string;
     createdAt: string;
   }
-  
-  export interface Gig {
-    id: string;
+ export interface Gig {
+    _id: string;
     title: string;
     description: string;
     budget: number;
+    ownerId: {
+      _id: string;
+      name: string;
+      email: string;
+    };
     status: 'open' | 'assigned' | 'completed';
-    clientId: string;
-    clientName: string;
-    assignedFreelancerId?: string;
     createdAt: string;
-    updatedAt: string;
   }
   
-  export interface Bid {
-    id: string;
+ export interface Bid {
+    _id: string;
     gigId: string;
-    freelancerId: string;
-    freelancerName: string;
-    freelancerEmail: string;
+    freelancerId: {
+      _id: string;
+      name: string;
+      avatarUrl: string;
+    };
     message: string;
     price: number;
     status: 'pending' | 'hired' | 'rejected';

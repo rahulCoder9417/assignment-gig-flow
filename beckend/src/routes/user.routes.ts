@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken, changeCurrentPassword, updateAccountDetails, updateUserAvatar, updateUserCoverImage, loginViaAccessToken } from "../controllers/user.controller.js";
+import { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken, changeCurrentPassword, updateAccountDetails, updateUserAvatar, updateUserCoverImage, loginViaAccessToken, getProfile } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middleware/auth.js"
 const router = Router();
 
 router.route("/logout").post(verifyJWT,  logoutUser)
+router.route("/get-profile/:id").get(verifyJWT,  getProfile)
 router.route("/refresh-token").post(refreshAccessToken)
 router.route("/change-password").post(verifyJWT,  changeCurrentPassword)
 router.route("/current-user").get(verifyJWT, getCurrentUser)

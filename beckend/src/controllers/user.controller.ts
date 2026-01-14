@@ -343,13 +343,13 @@ const updateUserAvatar = async(req: Request, res: Response) => {
   
   const oldAvatarUrl = user?.avatarUrl;
   if (oldAvatarUrl) {
-      await deleteImageFromCloudinary(oldAvatarUrl); 
+       await deleteImageFromCloudinary(oldAvatarUrl); 
   }
 
   return res
   .status(200)
   .json(
-      new ApiResponse(200, user, "Avatar image updated successfully")
+      new ApiResponse(200,avatarUrl, "Avatar image updated successfully")
   )
 }
 
@@ -359,7 +359,6 @@ const updateUserCoverImage = async(req: Request, res: Response) => {
   if (!coverImage) {
       throw new ApiError(400, "Cover image file is missing")
   }
-  
 
   const user = await User.findByIdAndUpdate(
       req.user?._id,
@@ -378,8 +377,18 @@ const updateUserCoverImage = async(req: Request, res: Response) => {
   return res
   .status(200)
   .json(
-      new ApiResponse(200, user, "Cover image updated successfully")
+      new ApiResponse(200,coverImage, "Cover image updated successfully")
   )
+}
+
+const getProfile = async(req: Request, res: Response) => {
+  const user = await User.findById(req.params.id)
+  if (!user) {
+      throw new ApiError(404, "User not found")
+  }
+  return res
+  .status(200)
+  .json(new ApiResponse(200, user, "User fetched successfully"))
 }
 export {
   registerUser,
@@ -391,5 +400,6 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  getProfile
 }

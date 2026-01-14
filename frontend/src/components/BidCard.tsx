@@ -1,82 +1,91 @@
-import type { Bid } from '@/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { DollarSign, User, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { motion } from 'framer-motion';
-
+import { User, CheckCircle, Clock } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import type { Bid } from '@/types'; // Ensure you have this type defined
+import { useNavigate } from 'react-router-dom';
 interface BidCardProps {
   bid: Bid;
-  isOwner?: boolean;
-  onHire?: (bidId: string) => void;
-  showGigLink?: boolean;
-  index?: number;
+  isOwner: boolean;
+  onHire: (bidId: string) => void;
+  index: number;
 }
 
-const BidCard = ({ bid, isOwner = false, onHire, showGigLink = false, index = 0 }: BidCardProps) => {
-  const statusConfig = {
-    pending: { class: 'status-pending', icon: Clock, label: 'Pending' },
-    hired: { class: 'status-hired', icon: CheckCircle, label: 'Hired' },
-    rejected: { class: 'status-rejected', icon: XCircle, label: 'Rejected' },
-  };
-
-  const status = statusConfig[bid.status];
-  const StatusIcon = status.icon;
-
+const BidCard = ({ bid, isOwner, onHire, index }: BidCardProps) => {
+  const isHired = bid.status === 'hired';
+  const navigate = useNavigate();
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-    >
-      <Card className="gradient-card border border-border overflow-hidden">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                {bid.freelancerName.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p className="font-medium text-foreground">{bid.freelancerName}</p>
-                <p className="text-sm text-muted-foreground">{bid.freelancerEmail}</p>
-              </div>
+    <Card onClick={()=>navigate(`/profile/${bid.freelancerId?._id}`)} className={`overflow-hidden transition-all duration-300 hover:shadow-md ${isHired ? 'border-success/50 bg-success/5' : 'border-border'}`}>
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          {/* Freelancer Info */}
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
+              <img src={bid.freelancerId?.avatarUrl} alt="" className="rounded-full w-8 h-8" />
             </div>
-            <Badge variant="secondary" className={status.class}>
-              <StatusIcon className="mr-1 h-3 w-3" />
-              {status.label}
-            </Badge>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-foreground">
+                  {bid.freelancerId?.name || 'Unknown Freelancer'}
+                </h4>
+                {isHired && (
+                  <Badge variant="secondary" className="bg-success/20 text-success hover:bg-success/20">
+                    Hired
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                <Clock className="h-3 w-3" />
+                {formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true })}
+              </p>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">{bid.message}</p>
-          
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-border">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <DollarSign className="h-4 w-4 text-success" />
-                <span className="font-semibold text-foreground">${bid.price.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>{formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true })}</span>
-              </div>
-            </div>
-            
-            {isOwner && bid.status === 'pending' && onHire && (
-              <Button
-                size="sm"
-                onClick={() => onHire(bid.id)}
-                className="gradient-primary hover:opacity-90 transition-opacity"
-              >
-                <CheckCircle className="mr-1.5 h-4 w-4" />
-                Hire
+
+          {/* Price */}
+          <div className="text-right">
+            <span className="block text-2xl font-bold font-display text-primary">
+              ${bid.price.toLocaleString()}
+            </span>
+            <span className="text-xs text-muted-foreground">Proposed amount</span>
+          </div>
+        </div>
+<div className="flex justify-between">
+        {/* Message */}
+        <div className="mt-4 rounded-md bg-muted/50 p-4">
+          <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+            {bid.message}
+          </p>
+        </div>
+
+        {/* Hire Action - Only show if Owner and Gig is Open (or this bid is the hired one) */}
+        {isOwner && (
+          <div className="mt-4 flex justify-end">
+            {isHired ? (
+              <Button disabled variant="outline" className="border-success text-success opacity-100">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Hired
               </Button>
+            ) : bid.status !== 'rejected' ? (
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onHire(bid._id)}}
+                className="gradient-primary"
+                size="sm"
+              >
+                Hire Freelancer
+              </Button>
+            ) : (
+              <Badge variant="outline" className="text-muted-foreground">
+                Rejected
+              </Badge>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

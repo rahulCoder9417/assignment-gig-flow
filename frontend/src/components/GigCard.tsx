@@ -8,11 +8,13 @@ import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 
 interface GigCardProps {
-  gig: Gig;
+  gig: {bidCount: number, ownerName: string, ownerAvatar: string} & Gig;
+  
   index?: number;
 }
 
 const GigCard = ({ gig, index = 0 }: GigCardProps) => {
+  console.log(gig)
   const statusColors = {
     open: 'status-open',
     assigned: 'status-assigned',
@@ -30,7 +32,7 @@ const GigCard = ({ gig, index = 0 }: GigCardProps) => {
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <Link
-                to={`/gigs/${gig.id}`}
+                to={`/gigs/${gig._id}`}
                 className="block font-display text-lg font-semibold leading-tight text-foreground transition-colors hover:text-primary line-clamp-2"
               >
                 {gig.title}
@@ -56,10 +58,13 @@ const GigCard = ({ gig, index = 0 }: GigCardProps) => {
               <Clock className="h-4 w-4" />
               <span>{formatDistanceToNow(new Date(gig.createdAt), { addSuffix: true })}</span>
             </div>
+            
           </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <User className="h-4 w-4" />
-            <span>{gig.clientName}</span>
+          
+          <span className='text-blue-800'>{gig.bidCount}</span>{" "}Bids   
+          <div className="flex items-center  gap-1.5 text-sm text-muted-foreground">
+           <img src={gig.ownerAvatar} className="h-8 w-8 rounded-full" />
+           <span>{gig.ownerName}</span>
           </div>
         </CardFooter>
       </Card>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { addGig } from '@/store/slices/gigsSlice';
+import { useAppSelector } from '@/store/hooks';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, DollarSign, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { showToast } from '@/lib/toast';
-import { toast } from 'sonner';
+import { onSubmitAxios } from '@/lib/axios';
 
 const PostGig = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [title, setTitle] = useState('');
@@ -57,23 +55,28 @@ const PostGig = () => {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const newGig = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      description: description.trim(),
-      budget: budgetNum,
-      status: 'open' as const,
-      clientId: user!.id,
-      clientName: user!.name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const res = await onSubmitAxios('post', 'gigs/', {
+        title: title.trim(),
+        description: description.trim(),
+        budget: budgetNum,
+      });
 
-    dispatch(addGig(newGig));
-    showToast(true, 'Gig posted successfully!');
-    navigate(`/gigs/${newGig.id}`);
+      if (res.status === 201) {
+        const newGig = res.data.data;
+        showToast(true, 'Gig posted successfully!');
+        navigate(`/gigs/${newGig._id}`);
+      } else {
+        showToast(false, res.data.message || 'Failed to post gig');
+      }
+    } catch (error: any) {
+      console.error('Error posting gig:', error);
+      const errorMessage = error?.response?.data?.message || 'Failed to post gig';
+      showToast(false, errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

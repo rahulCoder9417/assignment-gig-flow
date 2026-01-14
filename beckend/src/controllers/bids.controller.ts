@@ -46,12 +46,9 @@ export const getBidsForGig = async (req: Request, res: Response) => {
       throw new ApiError(404, "Gig not found");
     }
 
-    if (gig.ownerId.toString() !== userId?.toString()) {
-      throw new ApiError(403, "Access denied");
-    }
 
     const bids = await Bid.find({ gigId })
-      .populate("freelancerId", "name email")
+      .populate("freelancerId", "name _id avatarUrl")
       .sort({ createdAt: -1 });
 
     return res.status(200).json(new ApiResponse(200, bids, "Bids fetched successfully"));
@@ -65,12 +62,19 @@ export const acceptBid = async (req: Request, res: Response) => {
   try {
     session.startTransaction();
 
-    const {  bidId } = req.params;
-    const userId = req.user?._id;
+    const bidId = new mongoose.Types.ObjectId(req.params.bidId);
+    const userId = req.user!._id;
 
-    const gigId = await Bid.findById(bidId).select("gigId").toString();
+    const bid = await Bid.findOne({
+      _id: bidId,
+      status: "pending",
+    }).session(session);
+
+    if (!bid) {
+      throw new ApiError(404, "Bid not found or already processed");
+    }
     const gig = await Gig.findOne({
-      _id: gigId,
+      _id: bid.gigId,
       ownerId: userId,
       status: "open",
     }).session(session);
@@ -81,34 +85,28 @@ export const acceptBid = async (req: Request, res: Response) => {
         "Gig not found, not owned by you, or already assigned"
       );
     }
-
-    const bid = await Bid.findOne({
-      _id: bidId,
-      gigId,
-      status: "pending",
-    }).session(session);
-
-    if (!bid) {
-      throw new ApiError(404, "Bid not found or already processed");
-    }
-
     bid.status = "hired";
     await bid.save({ session });
+
     await Bid.updateMany(
-      { gigId, _id: { $ne: bidId } },
+      { gigId: bid.gigId, _id: { $ne: bidId } },
       { status: "rejected" },
       { session }
     );
 
     gig.status = "assigned";
     await gig.save({ session });
+
     await session.commitTransaction();
     const io = getIO();
-    io.to(bid.freelancerId._id.toString()).emit("hire-notification", {
+    io.to(bid.freelancerId.toString()).emit("hire-notification", {
       message: `You have been hired for "${gig.title}"`,
-      
+      gigId: gig._id,
     });
-    return res.status(200).json(new ApiResponse(200, bid, "Bid accepted successfully"));
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, bid, "Bid accepted successfully"));
   } catch (error) {
     await session.abortTransaction();
     throw error;
@@ -118,11 +116,19 @@ export const acceptBid = async (req: Request, res: Response) => {
 };
 
 
+
 export const getMyBids = async (req: Request, res: Response) => {
   try {
     const bids = await Bid.find({ freelancerId: req.user?._id })
-      .populate("gigId")
-      .sort({ createdAt: -1 });
+  .populate({
+    path: "gigId",
+    populate: {
+      path: "ownerId",
+      select: "name _id avatarUrl", // choose what you need
+    },
+  })
+  .sort({ createdAt: -1 });
+
     return res.status(200).json(new ApiResponse(200, bids, "Bids fetched successfully"));
   } catch (err) {
     throw new ApiError(500, "Failed to fetch bids");

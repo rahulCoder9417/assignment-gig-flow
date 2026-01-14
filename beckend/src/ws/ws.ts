@@ -9,15 +9,14 @@ export const initSocket = (httpServer: any) => {
       credentials: true,
     },
   });
+  console.log("Socket.io initialized on port ", process.env.PORT);
 
   io.on("connection", (socket) => {
-
     socket.on("register", (userId: string) => {
+      console.log("User registered:", userId);
       socket.join(userId);
     });
-    socket.on("close", (userId: string) => {
-      socket.leave(userId);
-    });
+  
 
     socket.on("disconnect", () => {
       console.log("Socket disconnected:", socket.id);

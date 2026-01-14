@@ -1,30 +1,94 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { setSearchQuery } from '@/store/slices/gigsSlice';
+import { useAppSelector } from '@/store/hooks';
 import Header from '@/components/Header';
 import GigCard from '@/components/GigCard';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Plus, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { onSubmitAxios } from '@/lib/axios';
+import { showToast } from '@/lib/toast';
+
+interface Gig {
+  _id: string;
+  title: string;
+  description: string;
+  budget: number;
+  ownerId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  status: 'open' | 'assigned' | 'completed';
+  createdAt: string;
+}
 
 const Gigs = () => {
-  const { gigs, searchQuery } = useAppSelector((state) => state.gigs);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const dispatch = useAppDispatch();
+  
+  const [gigs, setGigs] = useState<Gig[]>([]);
+  const [filteredGigs, setFilteredGigs] = useState<Gig[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const filteredGigs = useMemo(() => {
-    if (!searchQuery.trim()) return gigs.filter(g => g.status === 'open');
-    
-    const query = searchQuery.toLowerCase();
-    return gigs.filter(
-      (gig) =>
-        gig.status === 'open' &&
-        (gig.title.toLowerCase().includes(query) ||
-          gig.description.toLowerCase().includes(query))
+  // Fetch gigs
+  useEffect(() => {
+    const fetchGigs = async () => {
+      try {
+        setLoading(true);
+        const response = await onSubmitAxios('get', 'gigs/?status=open', {}, {}, );
+         console.log(response.data.data);
+        setGigs(response.data.data);
+        setFilteredGigs(response.data.data);
+      } catch (error: any) {
+        console.error('Error fetching gigs:', error);
+        showToast(false, 'Failed to load gigs');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGigs();
+  }, []);
+
+  // Handle search with backend API
+  useEffect(() => {
+    const searchGigs = async () => {
+      if (!searchQuery.trim()) {
+        // No search query - show all open gigs
+        setFilteredGigs(gigs);
+        return;
+      }
+
+      try {
+        const response= await onSubmitAxios('get', 'gigs/search', {}, {}, { search: searchQuery });
+        setFilteredGigs(response.data.data);
+      } catch (error: any) {
+        console.error('Error searching gigs:', error);
+        showToast(false, 'Failed to search gigs');
+      }
+    };
+
+    // Debounce search
+    const timer = setTimeout(() => {
+      searchGigs();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, gigs]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-16 text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="mt-4 text-muted-foreground">Loading gigs...</p>
+        </div>
+      </div>
     );
-  }, [gigs, searchQuery]);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,7 +101,7 @@ const Gigs = () => {
           transition={{ duration: 0.5 }}
         >
           {/* Page Header */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mx-10">
             <div>
               <h1 className="font-display text-3xl font-bold text-foreground">Browse Gigs</h1>
               <p className="mt-1 text-muted-foreground">
@@ -55,19 +119,19 @@ const Gigs = () => {
           </div>
 
           {/* Search */}
-          <div className="mb-8 max-w-md">
+          <div className="mb-8 max-w-md mx-10">
             <SearchBar
               value={searchQuery}
-              onChange={(value) => dispatch(setSearchQuery(value))}
+              onChange={(value) => setSearchQuery(value)}
               placeholder="Search gigs by title or description..."
             />
           </div>
 
           {/* Gigs Grid */}
           {filteredGigs.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mx-10">
               {filteredGigs.map((gig, index) => (
-                <GigCard key={gig.id} gig={gig} index={index} />
+                <GigCard key={gig._id} gig={gig as {bidCount: number, ownerName: string, ownerAvatar: string} & Gig} index={index} />
               ))}
             </div>
           ) : (

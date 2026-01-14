@@ -2,30 +2,76 @@ import { Request, Response } from "express";
 import Gig from "../models/gig.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import Bid from "../models/bid.model.js";
 export const getGigs = async (req: Request, res: Response) => {
   try {
-    const {
-      status = "open",
-      limit
-    } = req.query;
-    const filter: Record<string, any> = {};
-    if (status) {
-      filter.status = status;
-    }
+    const { status = "open", limit } = req.query;
 
-    let query = Gig.find(filter).sort({createdAt: -1});
+    const pipeline: any[] = [
+      { $match: { status } },
+      { $sort: { createdAt: -1 } },
 
-    if (limit) {
-      query = query.limit(Number(limit));
-    }
+      {
+        $lookup: {
+          from: "users",
+          localField: "ownerId",
+          foreignField: "_id",
+          as: "owner",
+        },
+      },
+      { $unwind: "$owner" },
 
-    const gigs = await query;
+      {
+        $lookup: {
+          from: "bids",
+          localField: "_id",
+          foreignField: "gigId",
+          as: "bids",
+        },
+      },
+
+      {
+        $addFields: {
+          bidCount: { $size: "$bids" },
+          ownerName: "$owner.name",
+          ownerAvatar: "$owner.avatarUrl",
+        },
+      },
+
+      {
+        $project: {
+          bids: 0,
+          owner: 0,
+          ownerId: 0,
+        },
+      },
+    ];
+
+    if (limit) pipeline.push({ $limit: Number(limit) });
+
+    const gigs = await Gig.aggregate(pipeline);
 
     return res
       .status(200)
       .json(new ApiResponse(200, gigs, "Gigs fetched successfully"));
   } catch (e) {
     throw new ApiError(500, "Failed to fetch gigs");
+  }
+};
+
+
+
+export const getGigById = async (req: Request, res: Response) => {
+  try {
+    const gig = await Gig.findById(req.params.id)
+    .populate("ownerId", "name avatarUrl")
+    if (!gig) {
+      throw new ApiError(404, "Gig not found");
+    }
+    return res.status(200).json(new ApiResponse(200, gig, "Gig fetched successfully"));
+  } catch (error) {
+
+    throw new ApiError(500, "Failed to fetch gig");
   }
 };
 
