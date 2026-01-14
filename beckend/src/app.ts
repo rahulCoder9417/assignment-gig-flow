@@ -9,7 +9,7 @@ const corsOptions = {
     origin: function (origin: string, callback: any) {
       const allowedOrigins = [
         "http://localhost:5173",
-
+         process.env.FRONTEND_URL
       ];
       
       if (!origin) return callback(null, true);
