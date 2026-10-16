@@ -3,18 +3,16 @@ import type { Gig } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, DollarSign, User } from 'lucide-react';
+import { Clock, DollarSign, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 
 interface GigCardProps {
   gig: {bidCount: number, ownerName: string, ownerAvatar: string} & Gig;
-  
   index?: number;
 }
 
 const GigCard = ({ gig, index = 0 }: GigCardProps) => {
-  console.log(gig)
   const statusColors = {
     open: 'status-open',
     assigned: 'status-assigned',
@@ -58,13 +56,18 @@ const GigCard = ({ gig, index = 0 }: GigCardProps) => {
               <Clock className="h-4 w-4" />
               <span>{formatDistanceToNow(new Date(gig.createdAt), { addSuffix: true })}</span>
             </div>
-            
           </div>
-          
-          <span className='text-blue-800'>{gig.bidCount}</span>{" "}Bids   
-          <div className="flex items-center  gap-1.5 text-sm text-muted-foreground">
-           <img src={gig.ownerAvatar} className="h-8 w-8 rounded-full" />
-           <span>{gig.ownerName}</span>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span className="font-semibold text-primary">{gig.bidCount}</span>
+              <span>Bids</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <img src={gig.ownerAvatar} className="h-6 w-6 rounded-full" alt={gig.ownerName} />
+              <span>{gig.ownerName}</span>
+            </div>
           </div>
         </CardFooter>
       </Card>
